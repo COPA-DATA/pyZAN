@@ -43,6 +43,7 @@ from sklearn import metrics
 # First connect to our analyzer
 zan = pyZAN.Server(server='localhost', metadb='ZA_Predictive820')
 
+#Test
 # Get projects, archives and variables
 projects = zan.read_MetaData_Projects()
 archives = zan.read_MetaData_Archives()
