@@ -60,7 +60,7 @@ variables = zan.read_MetaData_Variables()
                                                         
 # We will focus on R1_WeldingCurrent and use 1 hour of data for training
 
-train_data = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+train_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "PA",\
                                  variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
                                  time_from = datetime.datetime(2019,12,3,7,20,0),\
@@ -234,7 +234,7 @@ model2.save('LSTM Model 2_4Layers.h5')
 # Now we wil compare the two models by prediction the same timeframe
 # and comparing the results
 # let's load a new dataset from zenon
-eval_data = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+eval_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "PA",\
                                  variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
                                  time_from = datetime.datetime(2019,12,3,7,20,0),\
