@@ -43,6 +43,7 @@ from sklearn import metrics
 # First connect to our analyzer
 zan = pyZAN.Server(server='localhost', metadb='ZA_Predictive820')
 
+#Test
 # Get projects, archives and variables
 projects = zan.read_MetaData_Projects()
 archives = zan.read_MetaData_Archives()
@@ -51,7 +52,7 @@ variables = zan.read_MetaData_Variables()
 # We will focus on R1_WeldingCurrent, R1_WeldingResistance, R1_WeldingVoltage and R1_Status
 # Let's get our healthy data
 
-healthy = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+healthy = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "PA",\
                                  variable_references = [\
                                  "RobotSimForPA/Global/R1_WeldingResistance",\
@@ -219,7 +220,7 @@ healthy_sliced = healthy_sliced.R1_WeldingCurrent
 healthy_ml = healthy_sliced.unstack()
 
 # our healthy data is ready... we now need an unhealthy data set
-unhealthy = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+unhealthy = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "PA",\
                                  variable_references = [\
                                  "RobotSimForPA/Global/R1_WeldingResistance",\
@@ -311,7 +312,7 @@ tree.plot_tree(clf)
 
 # Get base data and transform it
 
-test_data = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+test_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "PA",\
                                  variable_references = [\
                                  "RobotSimForPA/Global/R1_WeldingResistance",\
@@ -336,7 +337,7 @@ test_data = test_data[['R1_WeldingCurrent','R1_Status']]
 # In my case, as I used R1 Error 3, I will load R1_Error3_Toggle as an label
 # if it is 1 our data is unhealthy
 
-label_data = zan.read_Online_Archiv(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
+label_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
                                  archive_reference = "AS",\
                                  variable_references = ["RobotSimForPA/ErrorAdditionR1/R1_Error3_Toggle"],\
                                  time_from = datetime.datetime(2019,12,3,9,40,0),\
