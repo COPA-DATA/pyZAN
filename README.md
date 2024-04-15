@@ -20,6 +20,9 @@ In this repository you can find two tutorials to get you started with pyZAN and 
 - zenon Analayzer > 3.40
 - basic python knowledge
 
-Sample data is provided as CSV/NPY files, so you could follow the tutorial without the zenon environment. But to really get the gist of it, I would recommend using the provided zenon project to generate the data yourself.
+Sample data is provided as CSV/NPY files, so you could follow the tutorial without the zenon environment. But to really get the gist of it, I would recommend using the provided zenon project to generate the data yourself. This can be done by following these steps:
+
+1. Restore the project backup `zenon project -  predictive_maintenance_demo_820.zip` from the `Tutorials` folder in Engineering Studio.
+2. Create a Report Engine database in Reporting Studio and use Metadata Synchronizer in Engineering Studio to fill the Report Engine database with the project metadata. The tutorals use the name `ZA_Predictive820` for the Report Engine database.
 
 Have fun!
