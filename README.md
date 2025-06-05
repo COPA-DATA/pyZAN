@@ -24,5 +24,6 @@ Sample data is provided as CSV/NPY files, so you could follow the tutorial witho
 
 1. Restore the project backup `zenon project -  predictive_maintenance_demo_820.zip` from the `Tutorials` folder in Engineering Studio.
 2. Create a Report Engine database in Reporting Studio and use Metadata Synchronizer in Engineering Studio to fill the Report Engine database with the project metadata. The tutorals use the name `ZA_Predictive820` for the Report Engine database.
+3. Wherever a `pyZAN.Server` is instantiated, add the constructor argument `analyzer_major_version=<your Report Engine version goes here>` to ensure the correct database structure definition version is used.
 
 Have fun!
