@@ -4,10 +4,8 @@
 #
 # The tutorial is based on the zenon project PREDICTIVE_MAINTENANCE_DEMO_820.
 # In that project a simple simulation creates cyclic welding data.
-# To follow this tutorial you will need:
-#   - a zenon supervisor > V 8.20 to run the project
-#   - a zenon analyzer > V 3.40  set up with a filled meta db for the project
-#   - pyZAN installed (pip install CopaData)
+# See the readme file of this repository to see what you need to follow this
+# tutorial.
 #
 # Prediction (or better: forecasting) a timeseries is not an easy task. There
 # are a lot of different algorithms you can use, that rely on 
@@ -34,49 +32,42 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Dropout
-
-
-import seaborn as sns
-import statsmodels.api as sm
 import matplotlib.pyplot as plt
-
-import pandas as pd
-
-
-
 
 # ------------------------------------------------------------
 # ---------------- Part 1 - Read trainig data ----------------
 # ------------------------------------------------------------
 
-# First connect to our analyzer
-zan = pyZAN.Server(server='localhost', metadb='ZA_Predictive820')
+# First connect to our Report Engine
+zan = pyZAN.Server(server = 'localhost', metadb = 'ZA_Predictive820')
 
 # Get projects, archives and variables
 projects = zan.read_MetaData_Projects()
 archives = zan.read_MetaData_Archives()
 variables = zan.read_MetaData_Variables()
 
-                                                        
-# We will focus on R1_WeldingCurrent and use 1 hour of data for training
+# This is the start timestamp of available data in UTC. The sample requires 1 hour of data
+# starting at this timestamp.
+
+reference_time = datetime.datetime(2025, 8, 11, 14, 0, 0)
+    
+# We will focus on R1_WeldingCurrent and use 30 minutes of data for training
 
 train_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
-                                 archive_reference = "PA",\
-                                 variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
-                                 time_from = datetime.datetime(2019,12,3,7,20,0),\
-                                 time_to = datetime.datetime(2019,12,3,7,50,0),\
-                                 show_visualnames=True)
-
-
+                                     archive_reference = "PA",\
+                                     variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
+                                     time_from = reference_time + datetime.timedelta(minutes = 20),\
+                                     time_to = reference_time + datetime.timedelta(minutes = 50),\
+                                     show_visualnames = True)
 
 # Our zenon data has a lot of really usefull columns like STATUSFLAGS and UNIT
 # For our simple purposes we don't need them... we'll discard all columns but VALUE
-train_data = train_data[['VALUE']].VALUE.values.reshape(-1,1)
+train_data = train_data[['VALUE']].VALUE.values.reshape(-1, 1)
 train_data = np.array(train_data)
 
 # I will save my train dataset.. you could just load it and won't need the zenon
 # environment
-#train_data = np.load("train_data.npy")
+# train_data = np.load("train_data.npy")
 
 # ------------------------------------------------------------
 # ----------------- Part 2 - Reshape the data ----------------
@@ -100,7 +91,6 @@ train_data_scaled = scaler.fit_transform(train_data)
 # of stackig errors.
 # We will train a model for each approach and see which one is better.
 
-
 # When training an neuronal network in most cases you will have to provide two
 # arrays of data. One will be the "features", which is the input-data for your
 # model and has the same form as the data you will provide to the model later on
@@ -120,19 +110,19 @@ train_data_scaled = scaler.fit_transform(train_data)
 # The features will be the same for both models, labels1 will hold the labels 
 # for our first model, labels35 for the second
 
-features=[]
-labels1=[]
-labels35=[]
+features = []
+labels1 = []
+labels35 = []
 
-for i in range(34,train_data_scaled.size-35):
-    features.append(train_data_scaled[i-34:i+1,0])
-    labels35.append(train_data_scaled[i+1:i+36,0])
-    labels1.append(train_data_scaled[i+1,0])
+for i in range(34, train_data_scaled.size - 35):
+    features.append(train_data_scaled[i - 34 : i + 1, 0])
+    labels35.append(train_data_scaled[i + 1 : i + 36, 0])
+    labels1.append(train_data_scaled[i + 1, 0])
 
 # convert both to np arrays
 features = np.array(features)
-labels35 =  np.array(labels35)
-labels1 =  np.array(labels1)
+labels35 = np.array(labels35)
+labels1 = np.array(labels1)
 
 # ------------------------------------------------------------
 # ----------------- Part 3 - the LSTM models ------------------
@@ -143,14 +133,14 @@ labels1 =  np.array(labels1)
 # 2 = nr of columns / timesteps we're looking back
 # 3 = nr of features... only 1 in our case
 
-features = np.reshape(features,(features.shape[0],features.shape[1],1))
+features = np.reshape(features, (features.shape[0], features.shape[1], 1))
 
 # I will save my features and labels, so you can use them without the need for
 # the zenon environment
 
-#features = np.load("features.npy")
-#labels35 = np.load("labels35.npy")
-#labels1 = np.load("labels1.npy")
+# features = np.load("features.npy")
+# labels35 = np.load("labels35.npy")
+# labels1 = np.load("labels1.npy")
 
 # create our first model
 model1 = Sequential()
@@ -158,25 +148,25 @@ model1 = Sequential()
 # we will combine 3 LSTM layers with one dropout layer each. The dropout layer
 # will prevent overfitting to a certain extent, by ignoring a percentage of the
 # neurons of the preceding layer.
-model1.add(LSTM(units=35, return_sequences=True, input_shape=(features.shape[1], 1)))
+model1.add(LSTM(units = 35, return_sequences = True, input_shape = (features.shape[1], 1)))
 model1.add(Dropout(0.2))
 
-model1.add(LSTM(units=35, return_sequences=True))
+model1.add(LSTM(units = 35, return_sequences = True))
 model1.add(Dropout(0.2))
 
-# --- optional layer---
-model1.add(LSTM(units=35, return_sequences=True))
+# --- begin optional layer ---
+model1.add(LSTM(units = 35, return_sequences = True))
 model1.add(Dropout(0.2))
-# ---optional layer---
+# --- end optional layer ---
 
-model1.add(LSTM(units=35))
+model1.add(LSTM(units = 35))
 model1.add(Dropout(0.2))
 
 # a dense layer for output
 model1.add(Dense(units = 1))
 
 # compile model
-model1.compile(optimizer='adam', loss = 'mse')
+model1.compile(optimizer = 'adam', loss = 'mse')
 
 # finally it's time to train our first model
 # depending on your hardware and the setup of your model this can take a while
@@ -188,95 +178,91 @@ model1.compile(optimizer='adam', loss = 'mse')
 # Restarting the kernel, reloading our dataset and proceeding with the second
 # training works usually
 # I saved my trained models, so you can load them...
-model1.fit(features,labels1,epochs=200)
+model1.fit(features, labels1, epochs = 200)
 
 # since this took a while lets save our trained model to disk
 model1.save('LSTM Model 1_4Layers.h5')
 
 # you can load your model later with
-#model1 = load_model('LSTM Model 1_4Layers.h5')
+# model1 = load_model('LSTM Model 1_4Layers.h5')
 
 # create our second model
 model2 = Sequential()
 
-model2.add(LSTM(units=35, return_sequences=True, input_shape=(features.shape[1], 1)))
+model2.add(LSTM(units = 35, return_sequences = True, input_shape = (features.shape[1], 1)))
 model2.add(Dropout(0.2))
 
-model2.add(LSTM(units=35, return_sequences=True))
+model2.add(LSTM(units = 35, return_sequences = True))
 model2.add(Dropout(0.2))
 
-# --- optional layer---
-model2.add(LSTM(units=35, return_sequences=True))
+# --- begin optional layer ---
+model2.add(LSTM(units = 35, return_sequences = True))
 model2.add(Dropout(0.2))
-# --- optional layer---
+# --- end optional layer ---
 
-model2.add(LSTM(units=35))
+model2.add(LSTM(units = 35))
 model2.add(Dropout(0.2))
 
 model2.add(Dense(units = 35))
 
 # compile model
-model2.compile(optimizer='adam', loss = 'mse')
+model2.compile(optimizer = 'adam', loss = 'mse')
 
-model2.fit(features,labels35,epochs=200)
+model2.fit(features, labels35, epochs = 200)
 
 # since this took a while lets save our trained model to disk
 model2.save('LSTM Model 2_4Layers.h5')
 
 # you can load your model later with
-#model2 = load_model('LSTM Model 2_4Layers.h5')
-
+# model2 = load_model('LSTM Model 2_4Layers.h5')
 
 # ------------------------------------------------------------
-# ---------------- Part 3 - make a forecast ------------------
+# ---------------- Part 4 - make a forecast ------------------
 # ------------------------------------------------------------
 
 # Now we wil compare the two models by prediction the same timeframe
 # and comparing the results
 # let's load a new dataset from zenon
 eval_data = zan.read_Online_Archive(project_reference = "PREDICTIVE_MAINTENANCE_DEMO_820",\
-                                 archive_reference = "PA",\
-                                 variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
-                                 time_from = datetime.datetime(2019,12,3,7,20,0),\
-                                 time_to = datetime.datetime(2019,12,3,7,25,0),\
-                                 show_visualnames=True)
-
-
-eval_data=eval_data.VALUE.values.reshape(1,-1)
+                                    archive_reference = "PA",\
+                                    variable_references = ["RobotSimForPA/Global/R1_WeldingCurrent"],\
+                                    time_from = reference_time + datetime.timedelta(minutes = 20),\
+                                    time_to = reference_time + datetime.timedelta(minutes = 25),\
+                                    show_visualnames = True)
+                                    
+eval_data=eval_data[['VALUE']].VALUE.values.reshape(-1, 1)
+eval_data = np.array(eval_data)
 
 # I will save my eval data, so you can use them without the need for
 # the zenon environment
-#eval_data = np.load("eval_data.npy")
+# eval_data = np.load("eval_data.npy")
 
-eval_data_scaled = scaler.transform(eval_data)
-
-
+eval_data_scaled = scaler.fit_transform(eval_data)
 
 # For our first model we need to make 35 predictions one after another
 # After each prediction we will add our last prediction to the input values
-d=eval_data_scaled[:,0:35]
-prediction1=np.array([[]])
-for i in range (0,35):
-    p=model1.predict(np.reshape(d,(1,35,1)))
-    prediction1 = np.hstack((prediction1,p))
-    d=d[:,1:35]
-    d= np.hstack((d,p))
+d = eval_data_scaled[0:35, :]
+prediction1 = np.array([[]])
+for i in range (0, 35):
+    p = model1.predict(np.reshape(d, (1, 35, 1)))
+    prediction1 = np.hstack((prediction1, p))
+    d = np.vstack((d[1:35], p))
     
-d = eval_data_scaled[:,0:35]
-prediction2 = model2.predict(np.reshape(d,(1,35,1)))
+d = eval_data_scaled[0:35, :]
+prediction2 = model2.predict(np.reshape(d, (1, 35, 1)))
 
 # scale it back
-prediction1 = scaler.inverse_transform(prediction1.reshape(-1,1))
-prediction2 = scaler.inverse_transform(prediction2.reshape(-1,1))
+prediction1 = scaler.inverse_transform(prediction1.reshape(-1, 1))
+prediction2 = scaler.inverse_transform(prediction2.reshape(-1, 1))
 
 # plot the results
-xv=range(0,80)
+xv = range(0, 80)
 plt.subplots()
 
-plt.plot(xv[0:35],eval_data.reshape(-1,1)[0:35], color='b')
-plt.plot(xv[35:70],prediction1.reshape(-1,1)[0:35], color='g',label='prediction1')
-plt.plot(xv[35:70],prediction2.reshape(-1,1)[0:35], color='r',label='prediction35')
-plt.plot(xv[35:80],eval_data.reshape(-1,1)[35:80], color='b',label='real',linestyle='dashed')
+plt.plot(xv[0:35], eval_data.reshape(-1, 1)[0:35], color = 'b')
+plt.plot(xv[35:70], prediction1.reshape(-1, 1)[0:35], color = 'g',label = 'prediction1')
+plt.plot(xv[35:70], prediction2.reshape(-1, 1)[0:35], color = 'r',label = 'prediction35')
+plt.plot(xv[35:80], eval_data.reshape(-1, 1)[35:80], color = 'b',label = 'real', linestyle = 'dashed')
 plt.legend()
 
 # Both predictions come out quite good, but our model 1 definitely has a better
