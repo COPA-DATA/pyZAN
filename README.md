@@ -34,7 +34,7 @@ In this repository you can find two tutorials to get you started with pyZAN and 
   - `scikit-learn` (also contains the `sklearn` package in the samples, but `sklearn` is deprecated and has been replaced by `scikit-learn` for installation)
   - `tensorflow`
   - `keras`
-- SQL Server Native Client 11.0 installed from [here](https://www.microsoft.com/en-us/download/details.aspx?id=56041) - download and install `sqlncli.msi`
+- ODBC driver 17 for Microsoft SQL Server can be installed from [here](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver17) - search for ` Download Microsoft ODBC Driver 17 for SQL Server` on this page and choose the appropriate architecture.
 
 Sample data is provided as CSV/NPY files, so you could follow the tutorial without the zenon environment. But to really get the gist of it, I would recommend using the provided zenon project to generate the data yourself. This can be done by following these steps:
 
