@@ -94,7 +94,6 @@ axs[0].set_title('current, voltage and status')
 healthy.plot(y = 'R1_WeldingResistance', ax = axs[1], legend = False)
 axs[1].set_title('resistance')
 fig.suptitle('healthy data')
-plt.show()
 
 # ------------------------------------------------------------
 # ------------------ Part 3 - Simple statistics --------------
@@ -351,6 +350,7 @@ test_data_prediction = pd.Series(clf.predict(labeled_data_ml))
 
 # and be amazed by the results...
 print("Test data accuracy:", metrics.accuracy_score(labels, test_data_prediction))
+plt.show()
 
 # again 99.something % for me... 
 
